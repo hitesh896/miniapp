@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Assistant</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .ai-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 { margin-top: 0; color: #1a73e8; text-align: center; }
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            resize: none;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+        button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        button:hover { background-color: #1557b0; }
+        .response-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #1a73e8;
+            border-radius: 4px;
+            min-height: 50px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 15px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ai-card">
+        <h2>🤖 Gemini AI Assistant</h2>
+        <textarea id="user-prompt" placeholder="Ask me anything (e.g., Explain quantum computing)..."></textarea>
+        <button id="ask-btn">Generate Response</button>
+        
+        <div class="response-box" id="ai-response">Your response will appear here...</div>
+    </div>
+
+    <script>
+        // 🔑 IMPORTANT: Paste your actual key from Google AI Studio here
+        const GEMINI_API_KEY = "AIzaSyCa1jjfQ-lS-XRbQFeBH3roJQgxLZaBTe0"; 
+
+        const askButton = document.getElementById('ask-btn');
+        const userPrompt = document.getElementById('user-prompt');
+        const aiResponse = document.getElementById('ai-response');
+
+        askButton.addEventListener('click', async () => {
+            const promptText = userPrompt.value.trim();
+            if (!promptText) {
+                alert("Please enter a prompt first!");
+                return;
+            }
+
+            aiResponse.innerText = "Thinking... 🤔";
+
+            // Updated to use the latest active production model endpoint
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+            const requestBody = {
+                contents: [{
+                    parts: [{ text: promptText }]
+                }]
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+                console.log("API Response Data:", data);
+
+                if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    aiResponse.innerText = data.candidates[0].content.parts[0].text;
+                } else if (data.error) {
+                    aiResponse.innerText = `API Error: ${data.error.message}`;
+                } else {
+                    aiResponse.innerText = "No response generated. Please check your prompt or API status.";
+                }
+
+            } catch (error) {
+                aiResponse.innerText = "An error occurred. Check your internet connection.";
+                console.error("Network Error:", error);
+            }
+        });
+    </script>
+
+</body>
+</html>
